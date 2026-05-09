@@ -1,484 +1,250 @@
+# Move Instructions:
 
+## Load Immediate
 
+**Syntax** : load_imm <value>
+**Op** : acc <- value
 
-# 1) Data movement
+### Takt 1:
 
-## `load_imm <address>` — 2 takt
- `ACC <- <address>`
-**Takt 1**
-- `Memory.addr <- PC`
-- `IR <- M[PC]`
-- `PC <- PC + 1`
-**Takt 2**
-- `Memory.addr <- PC`
-- `ACC <- M[PC]`
-- `PC <- PC + 4`
----
-## `load <offset>` — 3 takt
-`ACC <- M[PC + offset]`
-**Takt 1**
-- `Memory.addr <- PC`
-- `IR <- M[PC]`
-- `PC <- PC + 1`
-**Takt 2**
-- `Memory.addr <- PC`
-- `DR <- M[PC]`
-- `PC <- PC + 2`
-**Takt 3**
-- `ALU <- PC + sign_extend(DR)`
-- `Memory.addr <- ALU_out`
-- `ACC <- M[ALU_out]`
----
+- PC -> Memory.addr
+- M[PC] -> IR
+- PC = PC + 1
 
-## `store <offset>` — 3 takt
- `M[PC + offset] <- ACC`
+### Takt 2:
 
-**Takt 1**
-- `Memory.addr <- PC`
-- `IR <- M[PC]`
-- `PC <- PC + 1`
+- PC -> Memory.addr
+- M[PC] -> ACC
+- PC = PC + 4
 
-**Takt 2**
-- `Memory.addr <- PC`
-- `DR <- M[PC]`
-- `PC <- PC + 2`
-- `BR <- ACC`
+## Load
 
-**Takt 3**
-- `ALU <- PC + sign_extend(DR)`
-- `Memory.addr <- ALU_out`
-- `M[ALU_out] <- BR`
----
+**Syntax** : load <offset>
+**Op** : acc <- mem[pc + offset]
 
-## `load_addr <address>` — 3 takt
- `ACC <- M[address]`
-**Takt 1**
-- `Memory.addr <- PC`
-- `IR <- M[PC]`
-- `PC <- PC + 1`
-**Takt 2**
-- `Memory.addr <- PC`
-- `DR <- M[PC]`
-- `PC <- PC + 4`
-**Takt 3**
-- `Memory.addr <- DR`
-- `ACC <- M[DR]`
----
-## `store_addr <address>` — 3 takt
-`M[address] <- ACC`
-**Takt 1**
-- `Memory.addr <- PC`
-- `IR <- M[PC]`
-- `PC <- PC + 1`
-**Takt 2**
-- `Memory.addr <- PC`
-- `DR <- M[PC]`
-- `PC <- PC + 4`
-- `BR <- ACC`
-**Takt 3**
-- `Memory.addr <- DR`
-- `M[DR] <- BR`
----
-## `load_acc` — 2 takt
-`ACC <- M[ACC]`
+### Takt 1:
 
-**Takt 1**
-- `Memory.addr <- PC`
-- `IR <- M[PC]`
-- `PC <- PC + 1`
-**Takt 2**
-- `Memory.addr <- ACC`
-- `ACC <- M[ACC]`
----
+- PC -> Memory.addr
+- M[PC] -> IR
+- PC = PC + 1
 
-## `store_ind <address>` — 4 takt
- `M[M[address]] <- ACC`
-**Takt 1**
-- `Memory.addr <- PC`
-- `IR <- M[PC]`
-- `PC <- PC + 1`
-**Takt 2**
-- `Memory.addr <- PC`
-- `DR <- M[PC]`
-- `PC <- PC + 4`
-- `BR <- ACC`
-**Takt 3**
-- `Memory.addr <- DR`
-- `DR <- M[DR]`
-**Takt 4**
-- `Memory.addr <- DR`
-- `M[DR] <- BR`
----
-# 2) Arithmetic
-## `add <address>` — 4 takt
- `ACC <- ACC + M[PC + offset]`, update `C` and `V`
-**Takt 1**
-- `Memory.addr <- PC`
-- `IR <- M[PC]`
-- `PC <- PC + 1`
-**Takt 2**
-- `Memory.addr <- PC`
-- `DR <- M[PC]`
-- `PC <- PC + 2`
-**Takt 3**
-- `ALU <- PC + sign_extend(DR)`
-- `Memory.addr <- ALU_out`
-- `DR <- M[ALU_out]`
-**Takt 4**
-- `ALU <- ACC + DR`
-- `ACC <- ALU_out`
-- `C <- carry`
-- `V <- overflow`
+### Takt 2:
 
----
-## `sub <address>` — 4 takt
- `ACC <- ACC - M[PC + offset]`, update `V`
-**Takt 1**
-- `Memory.addr <- PC`
-- `IR <- M[PC]`
-- `PC <- PC + 1`
-**Takt 2**
-- `Memory.addr <- PC`
-- `DR <- M[PC]`
-- `PC <- PC + 2`
-**Takt 3**
-- `ALU <- PC + sign_extend(DR)`
-- `Memory.addr <- ALU_out`
-- `DR <- M[ALU_out]`
-**Takt 4**
-- `ALU <- ACC - DR`
-- `ACC <- ALU_out`
-- `V <- overflow`
----
-## `mul <address>` — 4 takt
- `ACC <- ACC * M[PC + offset]`, update `V`
-**Takt 1**
-- `Memory.addr <- PC`
-- `IR <- M[PC]`
-- `PC <- PC + 1`
-**Takt 2**
-- `Memory.addr <- PC`
-- `DR <- M[PC]`
-- `PC <- PC + 2`
-**Takt 3**
-- `ALU <- PC + sign_extend(DR)`
-- `Memory.addr <- ALU_out`
-- `DR <- M[ALU_out]`
-**Takt 4**
-- `ALU <- ACC * DR`
-- `ACC <- ALU_out`
-- `V <- overflow`
----
-## `div <address>` — 4 takt
-`ACC <- ACC / M[PC + offset]`
-**Takt 1**
-- `Memory.addr <- PC`
-- `IR <- M[PC]`
-- `PC <- PC + 1`
-**Takt 2**
-- `Memory.addr <- PC`
-- `DR <- M[PC]`
-- `PC <- PC + 2`
-**Takt 3**
-- `ALU <- PC + sign_extend(DR)`
-- `Memory.addr <- ALU_out`
-- `DR <- M[ALU_out]`
-**Takt 4**
-- `ALU <- ACC / DR`
-- `ACC <- ALU_out`
+- PC -> Memory.addr
+- M[PC] -> DR
+- PC = PC + 2
+
+### Takt 3:
+
+- DR(sign_extend) + PC -> Memory.addr
+- M[addr] -> ACC
+
+## Store:
+
+**Syntax** : store <offset>
+**Op**: mem[pc + offset] <- acc
+
+### Takt 1:
+
+- PC -> Memory.addr
+- M[PC] -> IR
+- PC = PC + 1
+
+### Takt 2:
+
+- PC -> Memory.addr
+- M[PC] -> DR
+- PC = PC + 2
+
+### Takt 3:
+
+- DR(sign_extend) + PC -> Memory.addr
+- ACC -> M[addr]
+
+## Load Address
+
+**Syntax** : load_addr <address>
+**Op** : acc <- mem[address]
+
+### Takt 1:
+
+- PC -> Memory.addr
+- M[PC] -> IR
+- PC = PC + 1
+
+### Takt 2:
+
+- PC -> Memory.addr
+- M[PC] -> DR
+- PC = PC + 4
+
+### Takt 3:
+
+- DR -> Memory.addr
+- M[addr] -> ACC
+
+## Store Address:
+
+**Syntax** : store_addr <address>
+**Op** : mem[address] <- acc
+
+### Takt 1:
+
+- PC -> Memory.addr
+- M[PC] -> IR
+- PC = PC + 1
+
+### Takt 2:
+
+- PC -> Memory.addr
+- M[PC] -> DR
+- PC = PC + 4
+
+### Takt 3:
+
+- DR -> Memory.addr
+- ACC -> M[addr]
+
+## Load Acc
+
+**Syntax** : load_acc
+**Op** : acc <- mem[acc]
+
+### Takt 1:
+
+- PC -> Memory.addr
+- M[PC] -> IR
+- PC = PC + 1
+
+### Takt 2:
+
+- ACC -> Memory.addr
+- M[addr] -> ACC
+
+## Store Indirect:
+
+**Syntax** : store_ind <address>
+**Op** : mem[mem[address]] <- acc
+
+### Takt 1:
+
+- PC -> Memory.addr
+- M[PC] -> IR
+- PC = PC + 1
+
+### Takt 2:
+
+- PC -> Memory.addr
+- M[addr] -> DR
+- PC = PC + 4
+
+### Takt 3:
+
+- DR -> Memory.addr
+- M[addr] -> DR
+
+### Takt 4:
+
+- DR -> Memory.addr
+- M[addr] -> ACC
 
 ---
 
-## `rem <address>` — 4 takt
-`ACC <- ACC % M[PC + offset]`
+# Arithmetic Instructions:
 
-**Takt 1**
-- `Memory.addr <- PC`
-- `IR <- M[PC]`
-- `PC <- PC + 1`
+## Инстркуции (кроме **clv** и **сlc**) выполняются таким образом:
 
-**Takt 2**
-- `Memory.addr <- PC`
-- `DR <- M[PC]`
-- `PC <- PC + 2`
+### Takt 1:
 
-**Takt 3**
-- `ALU <- PC + sign_extend(DR)`
-- `Memory.addr <- ALU_out`
-- `DR <- M[ALU_out]`
+- PC -> Memory.addr
+- M[PC] -> IR
+- PC = PC + 1
 
-**Takt 4**
-- `ALU <- ACC % DR`
-- `ACC <- ALU_out`
----
-## `clv` — 2 takt
- `V <- 0`
-**Takt 1**
-- `Memory.addr <- PC`
-- `IR <- M[PC]`
-- `PC <- PC + 1`
-**Takt 2**
-- `clv = 1`
-- `V <- 0`
----
-## `clc` — 2 takt
- `C <- 0`
-**Takt 1**
-- `Memory.addr <- PC`
-- `IR <- M[PC]`
-- `PC <- PC + 1`
-**Takt 2**
-- `clc = 1`
-- `C <- 0`
----
+### Takt 2:
 
-# 3) Bitwise
+- PC -> Memory.addr
+- M[addr] -> DR
+- PC = PC + 2
 
-## `shiftl <address>` — 4 takt
-`ACC <- ACC << M[PC + offset]`
+### Takt 3:
 
-**Takt 1**
-- `Memory.addr <- PC`
-- `IR <- M[PC]`
-- `PC <- PC + 1`
+- ACC <operation> DR -> ACC
 
-**Takt 2**
-- `Memory.addr <- PC`
-- `DR <- M[PC]`
-- `PC <- PC + 2`
+## Инстркуции **clv** и **сlc** выполняются таким образом:
 
-**Takt 3**
-- `ALU <- PC + sign_extend(DR)`
-- `Memory.addr <- ALU_out`
-- `DR <- M[ALU_out]`
+### Takt 1:
 
-**Takt 4**
-- `ALU <- ACC << DR`
-- `ACC <- ALU_out`
+- PC -> Memory.addr
+- M[PC] -> IR
+- PC = PC + 1
+
+### Takt 2:
+
+- 0 -> clc || 0 -> carry
 
 ---
 
-## `shiftr <address>` — 4 takt
-`ACC <- ACC >> M[PC + offset]`
+# Bitwise Instructions:
 
-**Takt 1**
-- `Memory.addr <- PC`
-- `IR <- M[PC]`
-- `PC <- PC + 1`
-**Takt 2**
-- `Memory.addr <- PC`
-- `DR <- M[PC]`
-- `PC <- PC + 2`
-**Takt 3**
-- `ALU <- PC + sign_extend(DR)`
-- `Memory.addr <- ALU_out`
-- `DR <- M[ALU_out]`
-**Takt 4**
-- `ALU <- ACC >> DR`
-- `ACC <- ALU_out`
----
-## `and <address>` — 4 takt
- `ACC <- ACC & M[PC + offset]`
-**Takt 1**
-- `Memory.addr <- PC`
-- `IR <- M[PC]`
-- `PC <- PC + 1`
-**Takt 2**
-- `Memory.addr <- PC`
-- `DR <- M[PC]`
-- `PC <- PC + 2`
-**Takt 3**
-- `ALU <- PC + sign_extend(DR)`
-- `Memory.addr <- ALU_out`
-- `DR <- M[ALU_out]`
-**Takt 4**
-- `ALU <- ACC & DR`
-- `ACC <- ALU_out`
----
-## `or <address>` — 4 takt
-`ACC <- ACC | M[PC + offset]`
-**Takt 1**
-- `Memory.addr <- PC`
-- `IR <- M[PC]`
-- `PC <- PC + 1`
-**Takt 2**
-- `Memory.addr <- PC`
-- `DR <- M[PC]`
-- `PC <- PC + 2`
-**Takt 3**
-- `ALU <- PC + sign_extend(DR)`
-- `Memory.addr <- ALU_out`
-- `DR <- M[ALU_out]`
-**Takt 4**
-- `ALU <- ACC | DR`
-- `ACC <- ALU_out`
+## Инстркуции (кроме **not**) выполняются таким образом:
+
+### Takt 1:
+
+- PC -> Memory.addr
+- M[PC] -> IR
+- PC = PC + 1
+
+### Takt 2:
+
+- PC -> Memory.addr
+- M[addr] -> DR
+- PC = PC + 2
+
+### Takt 3:
+
+- ACC <operation> DR -> ACC
+
+## Инстркуция **not** выполняется таким образом:
+
+### Takt 1:
+
+- PC -> Memory.addr
+- M[PC] -> IR
+- PC = PC + 1
+
+### Takt 2:
+
+- ACC = ~ACC
 
 ---
 
-## `xor <address>` — 4 takt
- `ACC <- ACC ^ M[PC + offset]`
+# Control Flow Instructions:
 
-**Takt 1**
-- `Memory.addr <- PC`
-- `IR <- M[PC]`
-- `PC <- PC + 1`
-**Takt 2**
-- `Memory.addr <- PC`
-- `DR <- M[PC]`
-- `PC <- PC + 2`
-**Takt 3**
-- `ALU <- PC + sign_extend(DR)`
-- `Memory.addr <- ALU_out`
-- `DR <- M[ALU_out]`
-**Takt 4**
-- `ALU <- ACC ^ DR`
-- `ACC <- ALU_out`
+## Инструкции (кроме **jump**) выполняются таким образом:
 
----
+### Takt 1:
 
-## `not` — 2 takt
- `ACC <- ~ACC`
-**Takt 1**
-- `Memory.addr <- PC`
-- `IR <- M[PC]`
-- `PC <- PC + 1`
-**Takt 2**
-- `ALU <- ~ACC`
-- `ACC <- ALU_out`
+- PC -> Memory.addr
+- M[PC] -> IR
+- PC = PC + 1
 
----
+### Takt 2:
 
-# 4) Control flow
-## `jmp <address>` — 2 takt
- `PC <- address`
-**Takt 1**
-- `Memory.addr <- PC`
-- `IR <- M[PC]`
-- `PC <- PC + 1`
-**Takt 2**
-- `Memory.addr <- PC`
-- `PC <- M[PC]`
----
+- PC -> Memory.addr
+- comparison
+- (mem_out -> PC) || (PC + 4 -> PC)
 
-## `beqz <address>` — 2 takt
-if `ACC == 0` -> `PC <- address`
-**Takt 1**
-- `Memory.addr <- PC`
-- `IR <- M[PC]`
-- `PC <- PC + 1`
+## Инструкция **jump** выполняется таким образом:
 
-**Takt 2**
-- `Memory.addr <- PC`
-- if `ACC == 0` -> `PC <- M[PC]`
-- else if `ACC != 0` ->  `PC <- PC + 4`
+### Takt 1:
 
----
+- PC -> Memory.addr
+- M[PC] -> IR
+- PC = PC + 1
 
-## `bnez <address>` — 2 takt
- `ACC != 0` thì `PC <- address`
+### Takt 2:
 
-**Takt 1**
-- `Memory.addr <- PC`
-- `IR <- M[PC]`
-- `PC <- PC + 1`
-**Takt 2**
-- `Memory.addr <- PC`
-- if `ACC != 0` -> `PC <- M[PC]`
-- if `ACC == 0` -> `PC <- PC + 4`
-
----
-
-## `bgt <address>` — 2 takt
-if `ACC > 0` -> `PC <- address`
-
-**Takt 1**
-- `Memory.addr <- PC`
-- `IR <- M[PC]`
-- `PC <- PC + 1`
-**Takt 2**
-- `Memory.addr <- PC`
-- if `ACC > 0` -> `PC <- M[PC]`
-- else `PC <- PC + 4`
-
----
-
-## `ble <address>` — 2 takt
-if `ACC < 0` -> `PC <- address`
-
-**Takt 1**
-- `Memory.addr <- PC`
-- `IR <- M[PC]`
-- `PC <- PC + 1`
-**Takt 2**
-- `Memory.addr <- PC`
-- if `ACC < 0` -> `PC <- M[PC]`
-- else `PC <- PC + 4`
-
----
-
-## `bvs <address>` — 2 takt
-if`V == 1` -> `PC <- address`
-**Takt 1**
-- `Memory.addr <- PC`
-- `IR <- M[PC]`
-- `PC <- PC + 1`
-**Takt 2**
-- `Memory.addr <- PC`
-- if `V == 1` -> `PC <- M[PC]`
-- else if `V == 0` -> `PC <- PC + 4`
-
----
-
-## `bvc <address>` — 2 takt
-if `V == 0` -> `PC <- address`
-
-**Takt 1**
-- `Memory.addr <- PC`
-- `IR <- M[PC]`
-- `PC <- PC + 1`
-**Takt 2**
-- `Memory.addr <- PC`
-- if `V == 0` -> `PC <- M[PC]`
-- else if `V == 1` -> `PC <- PC + 4`
-
----
-
-## `bcs <address>` — 2 takt
-if `C == 1` -> `PC <- address`
-
-**Takt 1**
-- `Memory.addr <- PC`
-- `IR <- M[PC]`
-- `PC <- PC + 1`
-**Takt 2**
-- `Memory.addr <- PC`
-- if `C == 1` -> `PC <- M[PC]`
-- if `C == 0` -> `PC <- PC + 4`
-
----
-
-## `bcc <address>` — 2 takt
-if `C == 0` -> `PC <- address`
-
-**Takt 1**
-- `Memory.addr <- PC`
-- `IR <- M[PC]`
-- `PC <- PC + 1`
-**Takt 2**
-- `Memory.addr <- PC`
-- if `C == 0` -> `PC <- M[PC]`
-- if `C == 1` -> `PC <- PC + 4`
-
----
-
-## `halt` — 2 takt
-stop CPU
-
-**Takt 1**
-- `Memory.addr <- PC`
-- `IR <- M[PC]`
-- `PC <- PC + 1`
-**Takt 2**
-- `HALT <- 1`
+- PC -> Memory.addr
+- mem_out -> PC
 
 ---
